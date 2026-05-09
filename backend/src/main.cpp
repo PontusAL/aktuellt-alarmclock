@@ -170,6 +170,19 @@ void installPlayTimer() {
     }
 }
 
+std::string readPlaybackTimeFromConfig(const std::string& configPath) {
+    std::string fileContents = readFile(configPath);
+    auto parsed = crow::json::load(fileContents);
+
+    if (!parsed) {
+        throw std::runtime_error("Config file is not valid JSON");
+    }
+    if (!parsed.has("playback_time")) {
+        throw std::runtime_error("Config file is missing playback_time");
+    }
+    return std::string(parsed["playback_time"].s());
+}
+
 int main(int argc, char* argv[]){
 
     std::string configPath = "../../config.json";
@@ -197,7 +210,7 @@ int main(int argc, char* argv[]){
         if (req.method == crow::HTTPMethod::PUT) {
             try {
                 crow::json::wvalue updatedSchedule = updateScheduleConfig(configPath, req.body);
-                std::string playbackTime = std::string(updatedSchedule["playback_time"].s());
+                std::string playbackTime = readPlaybackTimeFromConfig(configPath);
 
                 writePlayTimerFile(playbackTime);
                 installPlayTimer();
