@@ -7,6 +7,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <cstdlib>
 
 // Validation helpers for requests
 
@@ -141,6 +142,34 @@ crow::json::wvalue updateScheduleConfig(
     return updated;
 }
 
+std::string generatePlayTimerContent(const std::string& playbackTime) {
+    return
+        "[Unit]\n"
+        "Description=Run Aktuellt playback at configured time\n"
+        "\n"
+        "[Timer]\n"
+        "OnCalendar=*-*-* " + playbackTime + ":00\n"
+        "Persistent=true\n"
+        "Unit=aktuellt-play.service\n"
+        "\n"
+        "[Install]\n"
+        "WantedBy=timers.target\n";
+}
+
+void writePlayTimerFile(const std::string& playbackTime) {
+    const std::string path =
+        "/home/ppp/aktuellt-alarmclock/generated-systemd/aktuellt-play.timer";
+    std::string content = generatePlayTimerContent(playbackTime);
+    writeFileAtomically(path, content);
+}
+
+void installPlayTimer() {
+    int result = std::system("sudo -n /usr/local/bin/aktuellt-install-play-timer");
+    if (result != 0) {
+        throw std::runtime_error("Failed to install/restart aktuellt-play.timer");
+    }
+}
+
 int main(int argc, char* argv[]){
 
     std::string configPath = "../../config.json";
@@ -167,8 +196,13 @@ int main(int argc, char* argv[]){
         }
         if (req.method == crow::HTTPMethod::PUT) {
             try {
-                crow::json::wvalue schedule = updateScheduleConfig(configPath, req.body);
-                return makeSuccessResponse(std::move(schedule), "Schedule updated successfully");
+                crow::json::wvalue updatedSchedule = updateScheduleConfig(configPath, req.body);
+                std::string playbackTime = std::string(updatedSchedule["playback_time"].s());
+
+                writePlayTimerFile(playbackTime);
+                installPlayTimer();
+
+                return makeSuccessResponse(std::move(updatedSchedule), "Schedule updated successfully");
             } catch (const std::exception& error) {
                 return makeErrorResponse(error.what());
             }
