@@ -43,12 +43,6 @@ void validateScheduleJson(const crow::json::rvalue& json) {
             throw std::runtime_error("retain_files must be between 1 and 30");
         }
     }
-    if (json.has("timezone")) {
-        std::string timezone = std::string(json["timezone"].s());
-        if (!isValidTimezone(timezone)) {
-            throw std::runtime_error("timezone is not supported");
-        }
-    }
 }
 
 crow::json::wvalue makeHealthData() {
