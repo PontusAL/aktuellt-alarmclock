@@ -2,14 +2,15 @@
 
 #include "crow.h"
 #include <string>
+#include <utility>
 
 inline crow::json::wvalue makeSuccessResponse(
-    const crow::json::wvalue& data,
+    crow::json::wvalue data,
     const std::string& message
 ) {
     crow::json::wvalue response;
     response["success"] = true;
-    response["data"] = data;
+    response["data"] = std::move(data);
     response["message"] = message;
     return response;
 }
