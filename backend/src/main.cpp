@@ -133,9 +133,6 @@ crow::json::wvalue updateScheduleConfig(
     if (incoming.has("download_minutes_before")) {
         updated["download_minutes_before"] = incoming["download_minutes_before"].i();
     }
-    if (incoming.has("timezone")) {
-        updated["timezone"] = std::string(incoming["timezone"].s());
-    }
     if (incoming.has("retain_files")) {
         updated["retain_files"] = incoming["retain_files"].i();
     }
