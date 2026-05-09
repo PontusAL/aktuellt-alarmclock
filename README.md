@@ -30,3 +30,9 @@ user@otherComputer ~ % curl -s http://hemma-hallon.local:8080/api/health | jq
   "success": true
 }
 ```
+
+## Installing systemd services
+```bash
+sudo cp systemd/aktuellt-play.service /etc/systemd/system/aktuellt-play.service
+sudo systemctl daemon-reload
+```
