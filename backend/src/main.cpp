@@ -36,7 +36,8 @@ crow::json::wvalue readScheduleConfig(const std::string& configPath) {
     return schedule;
 }
 
-int main() {
+int main(int argc, char* argv[]){
+
     std::string configPath = "../../config.json";
     if (argc > 1) {
         configPath = argv[1];
@@ -47,7 +48,7 @@ int main() {
     ([] {
         return makeSuccessResponse(makeHealthData(), "Backend is healthy");
     });
-    
+
     CROW_ROUTE(app, "/api/schedule")
         .methods(crow::HTTPMethod::GET, crow::HTTPMethod::PUT)
     ([configPath](const crow::request& req) {
