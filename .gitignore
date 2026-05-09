@@ -3,6 +3,10 @@
 /logs
 
 
+# C++ tingz
+/build/
+/backend/build/
+
 # Angular specific
 /dist/
 /out-tsc/
