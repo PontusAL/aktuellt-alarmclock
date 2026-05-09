@@ -51,8 +51,6 @@ void validateScheduleJson(const crow::json::rvalue& json) {
     }
 }
 
-
-
 crow::json::wvalue makeHealthData() {
     crow::json::wvalue data;
     data["status"] = "ok";
@@ -67,6 +65,23 @@ std::string readFile(const std::string& path){
     std::stringstream buffer;
     buffer << file.rdbuf();
     return buffer.str();
+}
+
+void writeFileAtomically(const std::string& path, const std::string& contents) {
+    std::string tempPath = path + ".tmp";
+    {
+        std::ofstream file(tempPath);
+        if (!file.is_open()) {
+            throw std::runtime_error("Could not open temporary config file for writing");
+        }
+        file << contents;
+        if (!file.good()) {
+            throw std::runtime_error("Failed while writing temporary config file");
+        }
+    }
+    if (std::rename(tempPath.c_str(), path.c_str()) != 0) {
+        throw std::runtime_error("Could not replace config file");
+    }
 }
 
 crow::json::wvalue readScheduleConfig(const std::string& configPath) {
@@ -86,6 +101,53 @@ crow::json::wvalue readScheduleConfig(const std::string& configPath) {
     schedule["timezone"] = std::string(parsed["timezone"].s());
     schedule["retain_files"] = parsed["retain_files"].i();
     return schedule;
+}
+
+crow::json::wvalue updateScheduleConfig(
+    const std::string& configPath,
+    const std::string& requestBody
+) {
+    auto incoming = crow::json::load(requestBody);
+    if (!incoming) {
+        throw std::runtime_error("Request body is not valid JSON");
+    }
+    validateScheduleJson(incoming);
+    std::string existingContents = readFile(configPath);
+    auto existing = crow::json::load(existingContents);
+
+    if (!existing) {
+        throw std::runtime_error("Existing config file is not valid JSON");
+    }
+    crow::json::wvalue updated;
+
+    updated["enabled"] = existing["enabled"].b();
+    updated["alarm_time"] = std::string(existing["alarm_time"].s());
+    updated["playback_time"] = std::string(existing["playback_time"].s());
+    updated["download_minutes_before"] = existing["download_minutes_before"].i();
+    updated["timezone"] = std::string(existing["timezone"].s());
+    updated["retain_files"] = existing["retain_files"].i();
+
+    if (incoming.has("enabled")) {
+        updated["enabled"] = incoming["enabled"].b();
+    }
+    if (incoming.has("alarm_time")) {
+        updated["alarm_time"] = std::string(incoming["alarm_time"].s());
+    }
+    if (incoming.has("playback_time")) {
+        updated["playback_time"] = std::string(incoming["playback_time"].s());
+    }
+    if (incoming.has("download_minutes_before")) {
+        updated["download_minutes_before"] = incoming["download_minutes_before"].i();
+    }
+    if (incoming.has("timezone")) {
+        updated["timezone"] = std::string(incoming["timezone"].s());
+    }
+    if (incoming.has("retain_files")) {
+        updated["retain_files"] = incoming["retain_files"].i();
+    }
+    writeFileAtomically(configPath, updated.dump());
+
+    return updated;
 }
 
 int main(int argc, char* argv[]){
@@ -113,7 +175,12 @@ int main(int argc, char* argv[]){
             }
         }
         if (req.method == crow::HTTPMethod::PUT) {
-            return makeErrorResponse("Schedule update is not implemented yet");
+            try {
+                crow::json::wvalue schedule = updateScheduleConfig(configPath, req.body);
+                return makeSuccessResponse(std::move(schedule), "Schedule updated successfully");
+            } catch (const std::exception& error) {
+                return makeErrorResponse(error.what());
+            }
         }
         return makeErrorResponse("Unsupported method");
     });
