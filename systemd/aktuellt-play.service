@@ -1,0 +1,16 @@
+[Unit]
+Description=Play latest Aktuellt video
+
+[Service]
+Type=oneshot
+User=ppp
+Group=ppp
+WorkingDirectory=/home/ppp/aktuellt-alarmclock
+ExecStart=/home/ppp/aktuellt-alarmclock/scripts/play_latest.sh
+
+# Give the service access to a normal user runtime dir if needed later
+Environment=HOME=/home/ppp
+
+# Keep logs in journalctl as well as your own playback.log
+StandardOutput=journal
+StandardError=journal
