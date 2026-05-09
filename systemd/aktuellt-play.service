@@ -9,6 +9,7 @@ WorkingDirectory=/home/ppp/aktuellt-alarmclock
 ExecStart=/home/ppp/aktuellt-alarmclock/scripts/play_latest.sh
 KillMode=control-group
 TimeoutStopSec=5
+SuccessExitStatus=143
 
 # Give the service access to a normal user runtime dir if needed later
 Environment=HOME=/home/ppp
