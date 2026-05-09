@@ -9,3 +9,12 @@ From mp4:
 mpv --fs ~/videos/filename.mp4
 ```
 
+
+Build backend
+```bash
+cd ~/aktuellt-alarmclock/backend
+mkdir -p build
+cd build
+cmake ..
+cmake --build .
+```
