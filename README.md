@@ -18,3 +18,15 @@ cd build
 cmake ..
 cmake --build .
 ```
+
+Verify backend health from other device:
+```bash
+user@otherComputer ~ % curl -s http://hemma-hallon.local:8080/api/health | jq
+{
+  "message": "Backend is healthy",
+  "data": {
+    "status": "ok"
+  },
+  "success": true
+}
+```
