@@ -1,6 +1,58 @@
 #include "crow.h"
 #include "api_response.hpp"
 
+#include <cstdio>
+#include <fstream>
+#include <regex>
+#include <sstream>
+#include <stdexcept>
+#include <string>
+
+// Validation helpers for requests
+
+bool isValidTimeString(const std::string& value) {
+    std::regex timeRegex("^([01][0-9]|2[0-3]):[0-5][0-9]$");
+    return std::regex_match(value, timeRegex);
+}
+
+void validateScheduleJson(const crow::json::rvalue& json) {
+    if (json.has("enabled") && json["enabled"].t() != crow::json::type::False && json["enabled"].t() != crow::json::type::True) {
+        throw std::runtime_error("enabled must be a boolean");
+    }
+    if (json.has("alarm_time")) {
+        std::string alarmTime = std::string(json["alarm_time"].s());
+        if (!isValidTimeString(alarmTime)) {
+            throw std::runtime_error("alarm_time must use HH:MM format");
+        }
+    }
+    if (json.has("playback_time")) {
+        std::string playbackTime = std::string(json["playback_time"].s());
+        if (!isValidTimeString(playbackTime)) {
+            throw std::runtime_error("playback_time must use HH:MM format");
+        }
+    }
+    if (json.has("download_minutes_before")) {
+        int minutes = json["download_minutes_before"].i();
+        if (minutes < 0 || minutes > 180) {
+            throw std::runtime_error("download_minutes_before must be between 0 and 180");
+        }
+    }
+    if (json.has("retain_files")) {
+        int retainFiles = json["retain_files"].i();
+        if (retainFiles < 1 || retainFiles > 30) {
+            throw std::runtime_error("retain_files must be between 1 and 30");
+        }
+    }
+    if (json.has("timezone")) {
+        std::string timezone = std::string(json["timezone"].s());
+        if (!isValidTimezone(timezone)) {
+            throw std::runtime_error("timezone is not supported");
+        }
+    }
+}
+
+
+
 crow::json::wvalue makeHealthData() {
     crow::json::wvalue data;
     data["status"] = "ok";
