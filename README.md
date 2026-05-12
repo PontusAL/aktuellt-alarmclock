@@ -1,8 +1,6 @@
 # aktuellt-alarmclock
 This repository is supposed to act as a rasperry pi based alarm clock that can trigger a playback of the latest news episode on a scheduled time
 
-
-
 ## play video
 From mp4:
 ```bash
@@ -35,4 +33,11 @@ user@otherComputer ~ % curl -s http://hemma-hallon.local:8080/api/health | jq
 ```bash
 sudo cp systemd/aktuellt-play.service /etc/systemd/system/aktuellt-play.service
 sudo systemctl daemon-reload
+```
+
+## Stopping playback
+```bash
+sudo systemctl stop aktuellt-play.service
+
+systemctl status aktuellt-play.service
 ```
