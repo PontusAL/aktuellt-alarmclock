@@ -1,0 +1,8 @@
+{
+  "enabled": true,
+  "alarm_time": "07:10",
+  "playback_time": "07:15",
+  "download_minutes_before": 60,
+  "timezone": "Europe/Stockholm",
+  "retain_files": 5
+}

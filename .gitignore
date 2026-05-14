@@ -1,7 +1,7 @@
 # Pi specific
 /videos
 /logs
-
+config.json
 
 # C++ tingz
 /build/
